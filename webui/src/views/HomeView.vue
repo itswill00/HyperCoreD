@@ -3,8 +3,8 @@
     
     <div class="page-header">
       <div>
-        <div class="page-header-title">Dashboard</div>
-        <div class="page-header-sub">Tanzanite HyperCore by @itswill00</div>
+        <div class="page-header-title">HyperCore</div>
+        <div class="page-header-sub">by aerichandesu@noticesa</div>
       </div>
     </div>
 
