@@ -1,0 +1,13 @@
+# Tanzanite HyperCoreD - SELinux Security Policy Rules
+# Allows native daemon execution under Android Enforcing Mode
+
+type hypercored, domain;
+type hypercored_exec, exec_type, vendor_file_type, file_type;
+
+init_daemon_domain(hypercored)
+
+allow hypercored sysfs_devices_system_cpu:file rw_file_perms;
+allow hypercored sysfs_gpu:file rw_file_perms;
+allow hypercored thermal_zone:file rw_file_perms;
+allow hypercored cgroup:file rw_file_perms;
+allow hypercored proc_type:file rw_file_perms;

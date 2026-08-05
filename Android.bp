@@ -1,0 +1,30 @@
+// Tanzanite HyperCoreD - Native Android System Service & ROM Integration
+// Target OS: Android 12+ (AOSP / LineageOS / HyperOS ROM Ports)
+// Target Platform: MediaTek MT6789 (Helio G99 Ultra)
+
+cc_binary {
+    name: "hypercored",
+    srcs: [
+        "src/main.c",
+        "src/cpu.c",
+        "src/gpu.c",
+        "src/thermal.c",
+        "src/gamelist.c",
+        "src/ipc.c",
+        "src/sysfs.c",
+        "src/memory.c",
+        "src/io.c",
+    ],
+    cflags: [
+        "-O3",
+        "-Wall",
+        "-Werror",
+        "-DHYPERCORED_STANDALONE",
+    ],
+    shared_libs: [
+        "liblog",
+        "libcutils",
+    ],
+    init_rc: ["init.hypercore.rc"],
+    vendor: true,
+}
