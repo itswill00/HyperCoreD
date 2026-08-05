@@ -1,6 +1,6 @@
 # HyperCoreD
 
-A lightweight native C daemon and hardware tuner for MediaTek Helio G99 Ultra (MT6789) devices, built for Redmi Note 13 Pro 4G and Poco M6 Pro 4G.
+A lightweight native C system daemon and hardware tuner for MediaTek Helio G99 Ultra (MT6789) devices, developed by **[@itswill](https://github.com/itswill00)**. Built for Redmi Note 13 Pro 4G and Poco M6 Pro 4G.
 
 This repository contains the standalone system daemon (`hypercored`), Android init service scripts, SELinux policy rules, and build blueprints for Custom ROM maintainers (AOSP, LineageOS) and ROM porters.
 
@@ -131,6 +131,7 @@ Send `GET_STATUS` to `/dev/socket/hypercore.sock` to get JSON status output:
 
 ---
 
-## License
+## Developer & License
 
-MIT License - feel free to include this in your Custom ROM or ROM Port builds.
+- **Developer**: [@itswill](https://github.com/itswill00)
+- **License**: MIT License - feel free to include this in your Custom ROM or ROM Port builds.
