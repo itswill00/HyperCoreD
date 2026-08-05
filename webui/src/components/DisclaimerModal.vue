@@ -12,31 +12,55 @@
         <div class="content-box" ref="contentBox" @scroll="handleScroll">
           <p>
             <strong>1. Scope of system modifications</strong><br />
-            By using <strong>Tanzanite HyperCore</strong>, you acknowledge that this software applies low-level kernel optimizations, custom GPU Operating Performance Points (OPP), MediaTek GED DVFS parameters, and dynamic thermal charging policies on your MediaTek Helio G99 Ultra (MT6789) device.
+            By using <strong>Tanzanite HyperCore</strong>, you acknowledge that this software applies low-level kernel optimizations, custom GPU Operating Performance Points (OPP), MediaTek GED DVFS parameters, CPU frequency governor limits, and dynamic thermal charging policies on your MediaTek Helio G99 Ultra (MT6789) device.
           </p>
 
           <p>
             <strong>2. Complete developer release of liability</strong><br />
-            All software routines, binaries, and kernel tunings are provided strictly on an <em>"as-is"</em> and <em>"as-available"</em> basis without warranties of any kind. The lead developer (<strong>@itswill</strong>) is explicitly released from any and all liability, claims, damages, data loss, soft reboots, bootloops, battery degradation, thermal throttling, or hardware malfunction arising directly or indirectly from the installation, operation, or misuse of this software.
+            All software routines, C daemon binaries, and kernel tunings are provided strictly on an <em>"as-is"</em> and <em>"as-available"</em> basis without warranties of any kind. The lead developer (<strong>@itswill</strong>) is explicitly and permanently released from any and all liability, claims, financial losses, hardware degradation, data corruption, soft reboots, bootloops, battery wear, or unexpected device malfunction arising directly or indirectly from the installation, execution, or misuse of this software.
           </p>
 
           <p>
-            <strong>3. User risk acceptance & root operation</strong><br />
-            Operating root-level kernel tuners carries inherent risks. You certify that you are operating this module voluntarily, understand the technical changes being applied, and accept 100% personal responsibility for your device's stability and hardware health.
+            <strong>3. GPU Devfreq & MediaTek GED policies</strong><br />
+            HyperCore dynamically manages Mali-G57 GPU devfreq governors and GED frame boost parameters. While these adjustments eliminate vendor frequency caps and optimize frame delivery, operating the GPU at elevated performance states generates additional thermal output.
           </p>
 
           <p>
-            <strong>4. Safety rules & kernel requirements</strong><br />
-            This module requires Linux Kernel 5.10.x and strictly enforces system-background thread pinning on Little cores 0-3 to preserve Android Binder dispatcher stability. Modifying or overriding these safety rules manually may result in system watchdog soft reboots.
+            <strong>4. Thermal boundaries & charging guard</strong><br />
+            The daemon monitors battery temperature in real time during gaming sessions and adjusts charge current limits dynamically (2A, 4A, 8A). You acknowledge that thermal guard triggers are hardware protections and attempting to manually bypass or tamper with thermal guard nodes may cause thermal throttling or accelerated battery wear.
+          </p>
+
+          <p>
+            <strong>5. System-background thread stability</strong><br />
+            To preserve Android Binder dispatcher stability and prevent watchdog timeouts, system-background threads are strictly pinned to Little cores 0-3. Modifying these cgroup boundaries manually is unsupported and may trigger OS watchdog soft reboots.
+          </p>
+
+          <p>
+            <strong>6. Asynchronous memory compaction</strong><br />
+            Memory management routines rely exclusively on kernel <code>kcompactd</code> proactive compaction. Synchronous writes to <code>/proc/sys/vm/compact_memory</code> are disabled to prevent kernel <code>mmap_lock</code> contention across memory zones.
+          </p>
+
+          <p>
+            <strong>7. Voluntary root operation & risk acceptance</strong><br />
+            Executing root-level system daemons carries inherent risks. You certify that you are installing and operating this software voluntarily, understand the kernel-level changes being executed, and assume 100% personal responsibility for your device's operational stability and hardware integrity.
+          </p>
+
+          <p>
+            <strong>8. Binding agreement confirmation</strong><br />
+            By scrolling to the bottom of these terms and clicking "I agree & continue", you acknowledge that you have read, understood, and agreed to all 8 sections of this agreement.
           </p>
 
           <div class="scroll-completion-marker">
-            <span>End of terms. You may now accept and proceed.</span>
+            <span>You have reached the bottom. You may now agree and continue.</span>
           </div>
         </div>
 
+        <div class="progress-bar-bg" v-if="!hasScrolledToBottom">
+          <div class="progress-bar-fill" :style="{ width: scrollProgress + '%' }"></div>
+        </div>
+
         <p v-if="!hasScrolledToBottom" class="scroll-hint">
-          Please scroll to the bottom to continue
+          Scroll down to read all terms ({{ scrollProgress }}%)
         </p>
 
         <div class="option-row" @click="dontShowAgain = !dontShowAgain">
@@ -67,6 +91,7 @@ import Icons from '@/components/icons/Icons.vue'
 const visible = ref(false)
 const dontShowAgain = ref(true)
 const hasScrolledToBottom = ref(false)
+const scrollProgress = ref(0)
 const contentBox = ref(null)
 const toast = inject('toast')
 
@@ -74,6 +99,7 @@ onMounted(() => {
   window.resetDisclaimer = () => {
     localStorage.removeItem('hypercore_disclaimer_agreed')
     hasScrolledToBottom.value = false
+    scrollProgress.value = 0
     visible.value = true
   }
   window.addEventListener('reset-disclaimer', window.resetDisclaimer)
@@ -84,11 +110,21 @@ onMounted(() => {
 })
 
 function handleScroll(e) {
-  if (hasScrolledToBottom.value) return
   const target = e.target
-  const isBottom = target.scrollTop + target.clientHeight >= target.scrollHeight - 15
-  if (isBottom) {
+  const maxScroll = target.scrollHeight - target.clientHeight
+  if (maxScroll <= 0) {
+    scrollProgress.value = 100
     hasScrolledToBottom.value = true
+    return
+  }
+  
+  const current = target.scrollTop
+  const pct = Math.min(100, Math.max(0, Math.round((current / maxScroll) * 100)))
+  scrollProgress.value = pct
+
+  if (current + target.clientHeight >= target.scrollHeight - 10) {
+    hasScrolledToBottom.value = true
+    scrollProgress.value = 100
   }
 }
 
@@ -108,7 +144,7 @@ function acceptDisclaimer() {
 .disclaimer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.78);
+  background: rgba(0, 0, 0, 0.82);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: 9999;
@@ -165,9 +201,9 @@ function acceptDisclaimer() {
   border-radius: 16px;
   padding: 14px 16px;
   text-align: left;
-  max-height: 200px;
+  max-height: 220px;
   overflow-y: auto;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -185,13 +221,36 @@ function acceptDisclaimer() {
   color: var(--on-surface);
 }
 
+.content-box code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
 .scroll-completion-marker {
   font-size: 11px;
   color: var(--primary);
-  font-weight: 500;
+  font-weight: 600;
   text-align: center;
   padding: 8px 0 4px 0;
   border-top: 1px dashed var(--surface-bright);
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 3px;
+  background: var(--surface-container-highest);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.1s ease-out;
 }
 
 .scroll-hint {
@@ -255,8 +314,9 @@ function acceptDisclaimer() {
 }
 
 .agree-btn.disabled {
-  opacity: 0.45;
+  opacity: 0.35;
   cursor: not-allowed;
+  pointer-events: none;
   background: var(--surface-container-highest);
   color: var(--on-surface-variant);
 }
