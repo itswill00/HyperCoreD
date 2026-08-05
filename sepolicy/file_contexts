@@ -1,0 +1,2 @@
+/vendor/bin/hypercored    u:object_r:hypercored_exec:s0
+/dev/socket/hypercore.sock u:object_r:hypercored_socket:s0

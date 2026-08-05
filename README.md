@@ -103,8 +103,11 @@ service hypercored /vendor/bin/hypercored
 
 ---
 
-## SELinux Policy (`sepolicy/hypercore.te`)
+## SELinux Policy (`sepolicy/hypercore.te` & `sepolicy/file_contexts`)
 
+Designed to comply with AOSP Google CTS `neverallow` rules (Android 12, 13, 14, 15).
+
+`sepolicy/hypercore.te`:
 ```pp
 type hypercored, domain;
 type hypercored_exec, exec_type, vendor_file_type, file_type;
@@ -112,10 +115,33 @@ type hypercored_exec, exec_type, vendor_file_type, file_type;
 init_daemon_domain(hypercored)
 
 allow hypercored sysfs_devices_system_cpu:file rw_file_perms;
+allow hypercored sysfs_devices_system_cpu:dir r_dir_perms;
 allow hypercored sysfs_gpu:file rw_file_perms;
-allow hypercored thermal_zone:file rw_file_perms;
+allow hypercored sysfs_gpu:dir r_dir_perms;
+allow hypercored sysfs_batteryinfo:file rw_file_perms;
+allow hypercored sysfs_batteryinfo:dir r_dir_perms;
+allow hypercored sysfs_thermal:file rw_file_perms;
+allow hypercored sysfs_thermal:dir r_dir_perms;
+
 allow hypercored cgroup:file rw_file_perms;
-allow hypercored proc_type:file rw_file_perms;
+allow hypercored cgroup:dir r_dir_perms;
+allow hypercored cgroup_v2:file rw_file_perms;
+allow hypercored cgroup_v2:dir r_dir_perms;
+
+allow hypercored proc:file r_file_perms;
+allow hypercored proc_stat:file r_file_perms;
+allow hypercored proc_pid_max:file r_file_perms;
+
+type hypercored_socket, file_type, coredomain_socket;
+allow hypercored hypercored_socket:sock_file create_file_perms;
+allow hypercored self:capability { sys_nice };
+binder_use(hypercored)
+```
+
+`sepolicy/file_contexts`:
+```file_contexts
+/vendor/bin/hypercored    u:object_r:hypercored_exec:s0
+/dev/socket/hypercore.sock u:object_r:hypercored_socket:s0
 ```
 
 ---

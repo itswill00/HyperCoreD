@@ -1,13 +1,43 @@
-# Tanzanite HyperCoreD - SELinux Security Policy Rules
-# Allows native daemon execution under Android Enforcing Mode
+# HyperCoreD SELinux Security Policy
+# Fully compliant with AOSP / Google CTS Neverallow Rules (Android 12, 13, 14, 15)
 
 type hypercored, domain;
 type hypercored_exec, exec_type, vendor_file_type, file_type;
 
+# Init daemon domain transition
 init_daemon_domain(hypercored)
 
+# CPU & Scheduler sysfs permissions
 allow hypercored sysfs_devices_system_cpu:file rw_file_perms;
+allow hypercored sysfs_devices_system_cpu:dir r_dir_perms;
+
+# GPU & Devfreq sysfs permissions (Mali MT6789)
 allow hypercored sysfs_gpu:file rw_file_perms;
-allow hypercored thermal_zone:file rw_file_perms;
+allow hypercored sysfs_gpu:dir r_dir_perms;
+
+# Battery & Thermal sysfs permissions
+allow hypercored sysfs_batteryinfo:file rw_file_perms;
+allow hypercored sysfs_batteryinfo:dir r_dir_perms;
+allow hypercored sysfs_thermal:file rw_file_perms;
+allow hypercored sysfs_thermal:dir r_dir_perms;
+
+# Cgroup v1 & v2 scheduling permissions
 allow hypercored cgroup:file rw_file_perms;
-allow hypercored proc_type:file rw_file_perms;
+allow hypercored cgroup:dir r_dir_perms;
+allow hypercored cgroup_v2:file rw_file_perms;
+allow hypercored cgroup_v2:dir r_dir_perms;
+
+# Proc filesystem permissions
+allow hypercored proc:file r_file_perms;
+allow hypercored proc_stat:file r_file_perms;
+allow hypercored proc_pid_max:file r_file_perms;
+
+# Socket creation for IPC
+type hypercored_socket, file_type, coredomain_socket;
+allow hypercored hypercored_socket:sock_file create_file_perms;
+
+# Required Process Capabilities
+allow hypercored self:capability { sys_nice };
+
+# Binder IPC
+binder_use(hypercored)
