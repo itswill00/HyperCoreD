@@ -1,6 +1,6 @@
 # HyperCoreD
 
-A lightweight native C system daemon and hardware tuner for MediaTek Helio G99 Ultra (MT6789) devices, developed by **[@itswill](https://github.com/itswill00)**. Built for Redmi Note 14 4G and compatible with all MediaTek MT6789 devices (Redmi Note 13 Pro 4G, Poco M6 Pro 4G, etc.).
+A lightweight native C system daemon and hardware tuner for MediaTek Helio G99 Ultra (MT6789) devices running Linux Kernel 5.10.x (mandatory), developed by **[@itswill](https://github.com/itswill00)**. Built for Redmi Note 14 4G and compatible with all MT6789 devices (Redmi Note 13 Pro 4G, Poco M6 Pro 4G, etc.).
 
 This repository contains the standalone system daemon (`hypercored`), Android init service scripts, SELinux policy rules, and build blueprints for Custom ROM maintainers (AOSP, LineageOS) and ROM porters.
 
@@ -18,6 +18,7 @@ This repository contains the standalone system daemon (`hypercored`), Android in
 
 ## MT6789 Kernel & Safety Rules
 
+0. **Kernel Version**: Requires Linux Kernel 5.10.x (mandatory). Necessary for sysfs node compatibility, Mali GPU devfreq paths, and MediaTek GED DVFS parameters.
 1. **System-Background Cores**: Never restrict `system-background` cpuset below cores `0-3`. HAL threads like Audio, Sensor, and SurfaceFlinger helpers run here; restricting them triggers Binder timeouts and soft reboots.
 2. **Compaction**: Uses `kcompactd` (`compaction_proactiveness = 20`). Never write "1" synchronously to `/proc/sys/vm/compact_memory` as it locks kernel `mmap_lock` and freezes threads in D-state.
 3. **Xiaomi Thermal Profiles**: In `PROFILE_Gaming`, writes `"10"` to `/sys/class/thermal/thermal_message/sconfig` to raise thermal limits to 55°C without dimming the screen. Reverts to `"0"` in Interactive and Sleep profiles.
