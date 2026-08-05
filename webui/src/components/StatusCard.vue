@@ -1,7 +1,10 @@
 <template>
   <div class="status-banner">
     <div class="status-banner-left">
-      <div class="status-title">HyperCore</div>
+      <div class="status-title">
+        HyperCore
+        <span class="developer-sub">by aerichandesu@noticesa</span>
+      </div>
       <div class="status-sub">
         {{ store.isRunning ? `Daemon active • PID ${store.daemonPid}` : 'Service inactive' }}
       </div>
@@ -58,6 +61,17 @@ const heroBadgeClass = computed(() => {
   font-weight: 700;
   color: var(--on-surface, #f0f2f5);
   letter-spacing: -0.2px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.developer-sub {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--primary, #a0c4ff);
+  opacity: 0.85;
 }
 
 .status-sub {
