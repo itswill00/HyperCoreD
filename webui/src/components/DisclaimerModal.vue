@@ -17,7 +17,7 @@
 
           <p>
             <strong>2. Complete developer release of liability</strong><br />
-            All software routines, C daemon binaries, and kernel tunings are provided strictly on an <em>"as-is"</em> and <em>"as-available"</em> basis without warranties of any kind. The lead developer (<strong>@itswill</strong>) is explicitly and permanently released from any and all liability, claims, financial losses, hardware degradation, data corruption, soft reboots, bootloops, battery wear, or unexpected device malfunction arising directly or indirectly from the installation, execution, or misuse of this software.
+            All software routines, C daemon binaries, and kernel tunings are provided strictly on an <em>"as-is"</em> and <em>"as-available"</em> basis without warranties of any kind. The lead developer (<strong>@itswill00 / @noticesa</strong>) is explicitly and permanently released from any and all liability, claims, financial losses, hardware degradation, data corruption, soft reboots, bootloops, battery wear, or unexpected device malfunction arising directly or indirectly from the installation, execution, or misuse of this software.
           </p>
 
           <p>
