@@ -71,6 +71,12 @@ const contentBox = ref(null)
 const toast = inject('toast')
 
 onMounted(() => {
+  window.resetDisclaimer = () => {
+    localStorage.removeItem('hypercore_disclaimer_agreed')
+    hasScrolledToBottom.value = false
+    visible.value = true
+  }
+  window.addEventListener('reset-disclaimer', window.resetDisclaimer)
   const agreed = localStorage.getItem('hypercore_disclaimer_agreed')
   if (agreed !== '1') {
     visible.value = true

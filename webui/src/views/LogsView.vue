@@ -7,6 +7,9 @@
         <div class="page-header-sub">History of profile switches and system events</div>
       </div>
       <div style="display: flex; gap: 6px; align-items: center;">
+        <button class="btn-md3 btn-md3-secondary" style="padding: 6px 10px; font-size: 11px;" title="Reset terms disclaimer" @click="resetDisclaimer">
+          Terms
+        </button>
         <button class="btn-md3 btn-md3-secondary" style="padding: 6px 10px; font-size: 11px;" title="Copy all logs" @click="copyLog">
           Copy
         </button>
@@ -135,6 +138,15 @@ async function saveLog() {
 async function clearLog() {
   const msg = await store.clearLogs()
   if (toast) toast(msg)
+}
+
+function resetDisclaimer() {
+  localStorage.removeItem('hypercore_disclaimer_agreed')
+  if (window.resetDisclaimer) {
+    window.resetDisclaimer()
+  } else {
+    window.dispatchEvent(new CustomEvent('reset-disclaimer'))
+  }
 }
 
 watch(() => store.logs, () => {
