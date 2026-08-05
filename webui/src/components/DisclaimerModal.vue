@@ -3,13 +3,13 @@
     <div v-if="visible" class="disclaimer-overlay">
       <div class="disclaimer-card">
         <h2 class="title">Terms of use & disclaimer</h2>
-        <p class="subtitle">Tanzanite hypercore architecture</p>
+        <p class="subtitle">Universal hypercore architecture</p>
 
         <div class="content-box" ref="contentBox" @scroll="handleScroll">
           <div class="sec-block">
             <div class="sec-title">1. Scope of system modifications</div>
             <p>
-              By using <strong>Tanzanite HyperCore</strong>, you acknowledge that this software applies low-level kernel optimizations, custom GPU Operating Performance Points (OPP), MediaTek GED DVFS parameters, CPU frequency governor limits, and dynamic thermal charging policies on your MediaTek Helio G99 Ultra (MT6789) device.
+              By using <strong>HyperCore</strong>, you acknowledge that this software applies low-level kernel optimizations, custom GPU Operating Performance Points (OPP), MediaTek GED DVFS parameters, CPU frequency governor limits, and dynamic thermal charging policies on your MediaTek Helio G99 (Kernel 5.10.x) device.
             </p>
           </div>
 

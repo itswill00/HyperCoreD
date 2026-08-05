@@ -1,7 +1,7 @@
 <template>
   <div class="status-banner">
     <div class="status-banner-left">
-      <div class="status-title">Tanzanite HyperCore</div>
+      <div class="status-title">HyperCore</div>
       <div class="status-sub">
         {{ store.isRunning ? `Daemon active • PID ${store.daemonPid}` : 'Service inactive' }}
       </div>
