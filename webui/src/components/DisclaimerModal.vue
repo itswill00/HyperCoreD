@@ -9,17 +9,35 @@
         <h2 class="title">Terms of use & disclaimer</h2>
         <p class="subtitle">Tanzanite hypercore architecture</p>
 
-        <div class="content-box">
+        <div class="content-box" ref="contentBox" @scroll="handleScroll">
           <p>
-            By using <strong>Tanzanite HyperCore</strong>, you acknowledge that you are applying system kernel tuning, GPU frequency scaling, and thermal policies on your MediaTek MT6789 device.
+            <strong>1. Scope of system modifications</strong><br />
+            By using <strong>Tanzanite HyperCore</strong>, you acknowledge that this software applies low-level kernel optimizations, custom GPU Operating Performance Points (OPP), MediaTek GED DVFS parameters, and dynamic thermal charging policies on your MediaTek Helio G99 Ultra (MT6789) device.
           </p>
+
           <p>
-            All software routines and kernel tunings are provided on an <em>"as-is"</em> basis. The developer (<strong>@itswill</strong>) is not responsible for any hardware damage, data loss, soft reboots, or device instability resulting from the use of this module.
+            <strong>2. Complete developer release of liability</strong><br />
+            All software routines, binaries, and kernel tunings are provided strictly on an <em>"as-is"</em> and <em>"as-available"</em> basis without warranties of any kind. The lead developer (<strong>@itswill</strong>) is explicitly released from any and all liability, claims, damages, data loss, soft reboots, bootloops, battery degradation, thermal throttling, or hardware malfunction arising directly or indirectly from the installation, operation, or misuse of this software.
           </p>
+
           <p>
-            You accept full personal responsibility for operating this module on your device.
+            <strong>3. User risk acceptance & root operation</strong><br />
+            Operating root-level kernel tuners carries inherent risks. You certify that you are operating this module voluntarily, understand the technical changes being applied, and accept 100% personal responsibility for your device's stability and hardware health.
           </p>
+
+          <p>
+            <strong>4. Safety rules & kernel requirements</strong><br />
+            This module requires Linux Kernel 5.10.x and strictly enforces system-background thread pinning on Little cores 0-3 to preserve Android Binder dispatcher stability. Modifying or overriding these safety rules manually may result in system watchdog soft reboots.
+          </p>
+
+          <div class="scroll-completion-marker">
+            <span>End of terms. You may now accept and proceed.</span>
+          </div>
         </div>
+
+        <p v-if="!hasScrolledToBottom" class="scroll-hint">
+          Please scroll to the bottom to continue
+        </p>
 
         <div class="option-row" @click="dontShowAgain = !dontShowAgain">
           <div class="checkbox-box" :class="{ checked: dontShowAgain }">
@@ -28,7 +46,12 @@
           <span>Don't show again</span>
         </div>
 
-        <button class="agree-btn" @click="acceptDisclaimer">
+        <button
+          class="agree-btn"
+          :class="{ disabled: !hasScrolledToBottom }"
+          :disabled="!hasScrolledToBottom"
+          @click="acceptDisclaimer"
+        >
           <span>I agree & continue</span>
           <Icons name="check" :size="16" />
         </button>
@@ -43,6 +66,8 @@ import Icons from '@/components/icons/Icons.vue'
 
 const visible = ref(false)
 const dontShowAgain = ref(true)
+const hasScrolledToBottom = ref(false)
+const contentBox = ref(null)
 const toast = inject('toast')
 
 onMounted(() => {
@@ -52,7 +77,17 @@ onMounted(() => {
   }
 })
 
+function handleScroll(e) {
+  if (hasScrolledToBottom.value) return
+  const target = e.target
+  const isBottom = target.scrollTop + target.clientHeight >= target.scrollHeight - 15
+  if (isBottom) {
+    hasScrolledToBottom.value = true
+  }
+}
+
 function acceptDisclaimer() {
+  if (!hasScrolledToBottom.value) return
   if (dontShowAgain.value) {
     localStorage.setItem('hypercore_disclaimer_agreed', '1')
   }
@@ -67,9 +102,9 @@ function acceptDisclaimer() {
 .disclaimer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.76);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -124,16 +159,17 @@ function acceptDisclaimer() {
   border-radius: 16px;
   padding: 14px 16px;
   text-align: left;
-  max-height: 220px;
+  max-height: 200px;
   overflow-y: auto;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  scrollbar-width: thin;
 }
 
 .content-box p {
-  font-size: 12.5px;
+  font-size: 12px;
   line-height: 1.5;
   color: var(--on-surface-variant);
   margin: 0;
@@ -143,12 +179,28 @@ function acceptDisclaimer() {
   color: var(--on-surface);
 }
 
+.scroll-completion-marker {
+  font-size: 11px;
+  color: var(--primary);
+  font-weight: 500;
+  text-align: center;
+  padding: 8px 0 4px 0;
+  border-top: 1px dashed var(--surface-bright);
+}
+
+.scroll-hint {
+  font-size: 11px;
+  color: var(--error, #ffb4ab);
+  margin: 2px 0 8px 0;
+  font-weight: 500;
+}
+
 .option-row {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 4px 16px 4px;
+  padding: 4px 4px 14px 4px;
   cursor: pointer;
   user-select: none;
   touch-action: manipulation;
@@ -193,10 +245,17 @@ function acceptDisclaimer() {
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition: opacity 0.2s ease, transform 0.15s ease, background 0.2s ease;
 }
 
-.agree-btn:active {
+.agree-btn.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: var(--surface-container-highest);
+  color: var(--on-surface-variant);
+}
+
+.agree-btn:not(.disabled):active {
   opacity: 0.85;
   transform: scale(0.98);
 }
