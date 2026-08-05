@@ -14,6 +14,7 @@
     </main>
 
     <Navigation />
+    <DisclaimerModal />
 
     <transition name="toast-slide">
       <div v-if="toastMsg" class="toast-pill">
@@ -29,6 +30,7 @@ import { ref, provide, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useHyperStore } from '@/stores/hyper'
 import Navigation from '@/components/Navigation.vue'
+import DisclaimerModal from '@/components/DisclaimerModal.vue'
 import Icons from '@/components/icons/Icons.vue'
 
 const store = useHyperStore()
