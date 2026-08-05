@@ -2,10 +2,6 @@
   <transition name="disclaimer-fade">
     <div v-if="visible" class="disclaimer-overlay">
       <div class="disclaimer-card">
-        <div class="header-icon">
-          <Icons name="alert" :size="22" style="color: var(--primary);" />
-        </div>
-
         <h2 class="title">Terms of use & disclaimer</h2>
         <p class="subtitle">Tanzanite hypercore architecture</p>
 
@@ -67,7 +63,7 @@
           </div>
 
           <div class="scroll-completion-marker" :class="{ completed: hasScrolledToBottom }">
-            <Icons :name="hasScrolledToBottom ? 'check' : 'alert'" :size="14" />
+            <Icons v-if="hasScrolledToBottom" name="check" :size="14" />
             <span>{{ hasScrolledToBottom ? 'All terms read. You may now accept and proceed.' : 'Scroll further to reach the end of terms.' }}</span>
           </div>
         </div>
