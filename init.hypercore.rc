@@ -26,5 +26,6 @@ service hypercored /vendor/bin/hypercored
     group root system readproc
     capabilities SYS_NICE SYS_RESOURCE
     writepid /dev/cpuset/top-app/tasks
+    oom_score_adjust -1000
     onrestart restart hypercored
     seclabel u:r:su:s0

@@ -1,33 +1,48 @@
 # HyperCoreD
 
-A lightweight native C system daemon and hardware tuner for MediaTek Helio G99 Ultra (MT6789) devices running Linux Kernel 5.10.x (mandatory), developed by **[@itswill](https://github.com/itswill00)**. Built for Redmi Note 14 4G and compatible with all MT6789 devices (Redmi Note 13 Pro 4G, Poco M6 Pro 4G, etc.).
+A lightweight native C system daemon and hardware tuner for MediaTek Helio G99 Ultra (MT6789) devices running Linux Kernel 5.10.x (mandatory). Developed by **[@itswill](https://github.com/itswill00)**. Built for Redmi Note 14 4G and compatible across MT6789 devices (Redmi Note 13 Pro 4G, Poco M6 Pro 4G, etc.).
 
 This repository contains the standalone system daemon (`hypercored`), Android init service scripts, SELinux policy rules, and build blueprints for Custom ROM maintainers (AOSP, LineageOS) and ROM porters.
 
 ---
 
-## What It Does
+## Technical Overview & Operating Principles
 
-- **Game Detection**: Scans `/dev/cpuset/top-app/cgroup.procs` to find foreground games in under 0.1ms. If cgroup state lags, falls back to `dumpsys window` focus records.
-- **GPU Scaling (MediaTek GED)**: Keeps `gpu_cust_boost_freq = 0` so Joyose can't force 1003MHz spikes on light tasks. Sets threshold to 20 and margin to 15, letting the GPU scale smoothly across all 38 OPP steps (390MHz - 1003MHz).
-- **Thermal & Charging Guard**: Adjusts battery charging current based on temperature when gaming (>=42°C -> 2A, 37-41°C -> 4A, <37°C -> 8A).
-- **Battery Cycle Tracker**: Tracks partial charges across reboots (`cycle_tracker.conf`) and increments cycle count live when cumulative charging hits 100%, without waiting days for kernel EEPROM flushes.
-- **IPC Interface**: Exposes a Unix socket at `/dev/socket/hypercore.sock` for WebUI or app control.
+HyperCoreD runs as a native C system process (`/vendor/bin/hypercored`) under root or system privileges. It interfaces directly with Linux kernel sysfs nodes, CPU frequency governors, Mali GPU devfreq drivers, MediaTek GED framework, and Android cgroups.
 
----
+### Core Architecture
 
-## MT6789 Kernel & Safety Rules
-
-0. **Kernel Version**: Requires Linux Kernel 5.10.x (mandatory). Necessary for sysfs node compatibility, Mali GPU devfreq paths, and MediaTek GED DVFS parameters.
-1. **System-Background Cores**: Never restrict `system-background` cpuset below cores `0-3`. HAL threads like Audio, Sensor, and SurfaceFlinger helpers run here; restricting them triggers Binder timeouts and soft reboots.
-2. **Compaction**: Uses `kcompactd` (`compaction_proactiveness = 20`). Never write "1" synchronously to `/proc/sys/vm/compact_memory` as it locks kernel `mmap_lock` and freezes threads in D-state.
-3. **Xiaomi Thermal Profiles**: In `PROFILE_Gaming`, writes `"10"` to `/sys/class/thermal/thermal_message/sconfig` to raise thermal limits to 55°C without dimming the screen. Reverts to `"0"` in Interactive and Sleep profiles.
+- **Foreground Game Detection**: Inspects `/dev/cpuset/top-app/cgroup.procs` to identify active PIDs in the top-app cgroup in under 0.1ms. If cgroup updating lags during window transitions, falls back to `dumpsys window` focus records.
+- **MediaTek GED GPU DVFS**: Enforces `gpu_cust_boost_freq = 0` to prevent vendor daemons (e.g. Xiaomi Joyose) from forcing 1003MHz frequency spikes on light tasks. Configures `g_fb_dvfs_threshold = 20` and `gx_fb_dvfs_margin = 15`, allowing smooth 38-step OPP scaling (390MHz - 1003MHz).
+- **Battery Thermal & Charging Guard**: Evaluates battery temperature during gaming sessions and adjusts charge current limits dynamically (>=42°C -> 2A, 37°C-41°C -> 4A, <37°C -> 8A). Automatically detects microampere (uA) vs milliampere (mA) unit scales across custom kernels.
+- **Sub-Cycle Battery Tracker**: Accumulates partial depth-of-discharge (DOD) progress in `/data/adb/modules/tanzanite_hypercore/cycle_tracker.conf` across reboots. Increments reported battery cycles live when cumulative charging reaches 100%, bypassing delayed hardware EEPROM flushes.
+- **IPC Unix Socket**: Exposes a local socket at `/dev/socket/hypercore.sock` for status queries (`GET_STATUS`) and WebUI control.
 
 ---
 
-## Adding to an AOSP ROM Build
+## Edge Case Handling & System Resilience
 
-Clone this repository into your ROM source tree under `device/mediatek/mt6789-common/HyperCoreD`:
+1. **Boot Race Conditions**: If sysfs nodes (e.g., Mali GPU devfreq or power supply nodes) are not ready during early boot, `hypercored` enters a non-blocking retry loop for up to 30 seconds before declaring node absence.
+2. **OOM & LMK Protection**: Configured with `oom_score_adjust -1000` in init service to prevent Android Low Memory Killer from terminating the daemon under memory pressure.
+3. **Signal Safety & Baseline Restoration**: Signal handlers (`SIGTERM`, `SIGINT`, `SIGHUP`) capture termination events and restore original CPU governors, Mali power policies, and charge limits saved during startup.
+4. **Daemon Tampering Recovery**: Periodically verifies sysfs node state every 1-2 seconds. If vendor thermal daemons (`mi_thermald`, `joyose`) alter GPU ceilings or governors, `hypercored` re-enforces profile settings automatically.
+
+---
+
+## Kernel Requirements & Safety Constraints
+
+- **Kernel Version**: Requires Linux Kernel 5.10.x (mandatory). Necessary for sysfs node structure, Mali-G57 devfreq paths, and MediaTek GED parameters.
+- **System-Background Cores**: `system-background` cpuset must never be restricted below Little cores `0-3`. Hardware HALs (Audio, Sensor, SurfaceFlinger helper threads) execute in system-background; restricting them causes Binder starvation and Watchdog soft reboots.
+- **Memory Compaction**: Relies on kernel `kcompactd` (`compaction_proactiveness = 20`). Synchronous writes to `/proc/sys/vm/compact_memory` are avoided to prevent kernel `mmap_lock` contention across zones.
+- **Thermal Mode Coexistence**: In `PROFILE_Gaming`, writes `"10"` to `/sys/class/thermal/thermal_message/sconfig` (raising Xiaomi thermal throttle limits to 55°C without display dimming). Reverts to `"0"` in Interactive and Sleep profiles.
+
+---
+
+## Integration Guide
+
+### AOSP Source Tree Integration
+
+Clone into your ROM source tree under `device/mediatek/mt6789-common/HyperCoreD`:
 
 ```bash
 git clone https://github.com/itswill00/HyperCoreD device/mediatek/mt6789-common/HyperCoreD
@@ -40,15 +55,13 @@ PRODUCT_PACKAGES += \
     hypercored
 ```
 
-Build normally with `m hypercored` or `mka bacon`.
+Build with `m hypercored` or `mka bacon`.
 
----
+### Flashable ROM Port Deployment
 
-## Adding to a Flashable ROM Port
-
-1. Copy `hypercored` to `/vendor/bin/hypercored` and `chmod 0755`.
+1. Copy `hypercored` to `/vendor/bin/hypercored` and set permissions to `0755`.
 2. Copy `init.hypercore.rc` to `/vendor/etc/init/hw/init.hypercore.rc`.
-3. Add this line to your vendor `init.target.rc`:
+3. Append this line to your vendor `init.target.rc`:
 
 ```rc
 import /vendor/etc/init/hw/init.hypercore.rc
@@ -56,7 +69,7 @@ import /vendor/etc/init/hw/init.hypercore.rc
 
 ---
 
-## Android Init Config (`init.hypercore.rc`)
+## Android Init Service Configuration (`init.hypercore.rc`)
 
 ```rc
 on early-boot
@@ -83,6 +96,7 @@ service hypercored /vendor/bin/hypercored
     group root system readproc
     capabilities SYS_NICE SYS_RESOURCE
     writepid /dev/cpuset/top-app/tasks
+    oom_score_adjust -1000
     onrestart restart hypercored
     seclabel u:r:su:s0
 ```
@@ -106,9 +120,9 @@ allow hypercored proc_type:file rw_file_perms;
 
 ---
 
-## IPC Socket (`GET_STATUS`)
+## IPC Socket API (`GET_STATUS`)
 
-Send `GET_STATUS` to `/dev/socket/hypercore.sock` to get JSON status output:
+Send `GET_STATUS` to `/dev/socket/hypercore.sock` to retrieve JSON status telemetry:
 
 ```json
 {
@@ -135,4 +149,4 @@ Send `GET_STATUS` to `/dev/socket/hypercore.sock` to get JSON status output:
 ## Developer & License
 
 - **Developer**: [@itswill](https://github.com/itswill00)
-- **License**: MIT License - feel free to include this in your Custom ROM or ROM Port builds.
+- **License**: MIT License - open for integration into Custom ROMs and ROM Port builds.
