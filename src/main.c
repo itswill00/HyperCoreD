@@ -61,16 +61,38 @@ static void init_hardware_nodes(void) {
         }
     }
 
-    if (access("/sys/class/touch/touch_dev/touch_thp_smooth", F_OK) == 0) {
-        strcpy(g_nodes.touch_thp_smooth, "/sys/class/touch/touch_dev/touch_thp_smooth");
+    const char *thp_paths[] = {
+        "/sys/class/touch/touch_dev/touch_thp_smooth",
+        "/sys/class/touch/touch_dev/thp_smooth",
+        "/sys/devices/platform/11007000.i2c/i2c-0/0-0038/fts_thp_smooth",
+        NULL
+    };
+    for (int i = 0; thp_paths[i]; i++) {
+        if (access(thp_paths[i], F_OK) == 0) {
+            strcpy(g_nodes.touch_thp_smooth, thp_paths[i]);
+            break;
+        }
     }
-    if (access("/sys/class/touch/touch_dev/touch_edge", F_OK) == 0) {
-        strcpy(g_nodes.touch_edge, "/sys/class/touch/touch_dev/touch_edge");
+
+    const char *edge_paths[] = {
+        "/sys/class/touch/touch_dev/touch_edge",
+        "/sys/class/touch/touch_dev/edge_mode",
+        "/sys/devices/platform/11007000.i2c/i2c-0/0-0038/fts_edge_mode",
+        NULL
+    };
+    for (int i = 0; edge_paths[i]; i++) {
+        if (access(edge_paths[i], F_OK) == 0) {
+            strcpy(g_nodes.touch_edge, edge_paths[i]);
+            break;
+        }
     }
 
     const char *chg_paths[] = {
         "/sys/class/power_supply/battery/constant_charge_current_max",
         "/sys/class/power_supply/battery/charge_control_limit",
+        "/sys/class/power_supply/battery/input_current_limit",
+        "/sys/class/power_supply/main/constant_charge_current_max",
+        "/sys/class/power_supply/bms/constant_charge_current_max",
         NULL
     };
     for (int i = 0; chg_paths[i]; i++) {
