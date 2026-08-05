@@ -10,48 +10,65 @@
         <p class="subtitle">Tanzanite hypercore architecture</p>
 
         <div class="content-box" ref="contentBox" @scroll="handleScroll">
-          <p>
-            <strong>1. Scope of system modifications</strong><br />
-            By using <strong>Tanzanite HyperCore</strong>, you acknowledge that this software applies low-level kernel optimizations, custom GPU Operating Performance Points (OPP), MediaTek GED DVFS parameters, CPU frequency governor limits, and dynamic thermal charging policies on your MediaTek Helio G99 Ultra (MT6789) device.
-          </p>
+          <div class="sec-block">
+            <div class="sec-title">1. Scope of system modifications</div>
+            <p>
+              By using <strong>Tanzanite HyperCore</strong>, you acknowledge that this software applies low-level kernel optimizations, custom GPU Operating Performance Points (OPP), MediaTek GED DVFS parameters, CPU frequency governor limits, and dynamic thermal charging policies on your MediaTek Helio G99 Ultra (MT6789) device.
+            </p>
+          </div>
 
-          <p>
-            <strong>2. Complete developer release of liability</strong><br />
-            All software routines, C daemon binaries, and kernel tunings are provided strictly on an <em>"as-is"</em> and <em>"as-available"</em> basis without warranties of any kind. The lead developer (<strong>@itswill00 / @noticesa</strong>) is explicitly and permanently released from any and all liability, claims, financial losses, hardware degradation, data corruption, soft reboots, bootloops, battery wear, or unexpected device malfunction arising directly or indirectly from the installation, execution, or misuse of this software.
-          </p>
+          <div class="sec-block">
+            <div class="sec-title">2. Complete developer release of liability</div>
+            <p>
+              All software routines, C daemon binaries, and kernel tunings are provided strictly on an <em>"as-is"</em> and <em>"as-available"</em> basis without warranties of any kind. The lead developer (<strong>@itswill00 / @noticesa</strong>) is explicitly and permanently released from any and all liability, claims, financial losses, hardware degradation, data corruption, soft reboots, bootloops, battery wear, or unexpected device malfunction arising directly or indirectly from the installation, execution, or misuse of this software.
+            </p>
+          </div>
 
-          <p>
-            <strong>3. GPU Devfreq & MediaTek GED policies</strong><br />
-            HyperCore dynamically manages Mali-G57 GPU devfreq governors and GED frame boost parameters. While these adjustments eliminate vendor frequency caps and optimize frame delivery, operating the GPU at elevated performance states generates additional thermal output.
-          </p>
+          <div class="sec-block">
+            <div class="sec-title">3. GPU Devfreq & MediaTek GED policies</div>
+            <p>
+              HyperCore dynamically manages Mali-G57 GPU devfreq governors and GED frame boost parameters. While these adjustments eliminate vendor frequency caps and optimize frame delivery, operating the GPU at elevated performance states generates additional thermal output.
+            </p>
+          </div>
 
-          <p>
-            <strong>4. Thermal boundaries & charging guard</strong><br />
-            The daemon monitors battery temperature in real time during gaming sessions and adjusts charge current limits dynamically (2A, 4A, 8A). You acknowledge that thermal guard triggers are hardware protections and attempting to manually bypass or tamper with thermal guard nodes may cause thermal throttling or accelerated battery wear.
-          </p>
+          <div class="sec-block">
+            <div class="sec-title">4. Thermal boundaries & charging guard</div>
+            <p>
+              The daemon monitors battery temperature in real time during gaming sessions and adjusts charge current limits dynamically (2A, 4A, 8A). You acknowledge that thermal guard triggers are hardware protections and attempting to manually bypass or tamper with thermal guard nodes may cause thermal throttling or accelerated battery wear.
+            </p>
+          </div>
 
-          <p>
-            <strong>5. System-background thread stability</strong><br />
-            To preserve Android Binder dispatcher stability and prevent watchdog timeouts, system-background threads are strictly pinned to Little cores 0-3. Modifying these cgroup boundaries manually is unsupported and may trigger OS watchdog soft reboots.
-          </p>
+          <div class="sec-block">
+            <div class="sec-title">5. System-background thread stability</div>
+            <p>
+              To preserve Android Binder dispatcher stability and prevent watchdog timeouts, system-background threads are strictly pinned to Little cores 0-3. Modifying these cgroup boundaries manually is unsupported and may trigger OS watchdog soft reboots.
+            </p>
+          </div>
 
-          <p>
-            <strong>6. Asynchronous memory compaction</strong><br />
-            Memory management routines rely exclusively on kernel <code>kcompactd</code> proactive compaction. Synchronous writes to <code>/proc/sys/vm/compact_memory</code> are disabled to prevent kernel <code>mmap_lock</code> contention across memory zones.
-          </p>
+          <div class="sec-block">
+            <div class="sec-title">6. Asynchronous memory compaction</div>
+            <p>
+              Memory management routines rely exclusively on kernel <code>kcompactd</code> proactive compaction. Synchronous writes to <code>/proc/sys/vm/compact_memory</code> are disabled to prevent kernel <code>mmap_lock</code> contention across memory zones.
+            </p>
+          </div>
 
-          <p>
-            <strong>7. Voluntary root operation & risk acceptance</strong><br />
-            Executing root-level system daemons carries inherent risks. You certify that you are installing and operating this software voluntarily, understand the kernel-level changes being executed, and assume 100% personal responsibility for your device's operational stability and hardware integrity.
-          </p>
+          <div class="sec-block">
+            <div class="sec-title">7. Voluntary root operation & risk acceptance</div>
+            <p>
+              Executing root-level system daemons carries inherent risks. You certify that you are installing and operating this software voluntarily, understand the kernel-level changes being executed, and assume 100% personal responsibility for your device's operational stability and hardware integrity.
+            </p>
+          </div>
 
-          <p>
-            <strong>8. Binding agreement confirmation</strong><br />
-            By scrolling to the bottom of these terms and clicking "I agree & continue", you acknowledge that you have read, understood, and agreed to all 8 sections of this agreement.
-          </p>
+          <div class="sec-block">
+            <div class="sec-title">8. Binding agreement confirmation</div>
+            <p>
+              By scrolling to the bottom of these terms and clicking "I agree & continue", you acknowledge that you have read, understood, and agreed to all 8 sections of this agreement.
+            </p>
+          </div>
 
-          <div class="scroll-completion-marker">
-            <span>You have reached the bottom. You may now agree and continue.</span>
+          <div class="scroll-completion-marker" :class="{ completed: hasScrolledToBottom }">
+            <Icons :name="hasScrolledToBottom ? 'check' : 'alert'" :size="14" />
+            <span>{{ hasScrolledToBottom ? 'All terms read. You may now accept and proceed.' : 'Scroll further to reach the end of terms.' }}</span>
           </div>
         </div>
 
@@ -145,27 +162,28 @@ function acceptDisclaimer() {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.82);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px;
 }
 
 .disclaimer-card {
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   background: var(--surface-container-high);
   border: 1px solid var(--surface-bright);
   border-radius: 24px;
-  padding: 24px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+  padding: 24px 20px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  max-height: 90vh;
 }
 
 .header-icon {
@@ -176,7 +194,7 @@ function acceptDisclaimer() {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .title {
@@ -201,18 +219,45 @@ function acceptDisclaimer() {
   border-radius: 16px;
   padding: 14px 16px;
   text-align: left;
-  max-height: 220px;
+  max-height: 260px;
   overflow-y: auto;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   scrollbar-width: thin;
+  scrollbar-color: var(--outline-variant) transparent;
+}
+
+.content-box::-webkit-scrollbar {
+  width: 5px;
+}
+
+.content-box::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content-box::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: 4px;
+}
+
+.sec-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sec-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--primary);
+  letter-spacing: -0.1px;
 }
 
 .content-box p {
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 12.5px;
+  line-height: 1.6;
   color: var(--on-surface-variant);
   margin: 0;
 }
@@ -231,11 +276,21 @@ function acceptDisclaimer() {
 
 .scroll-completion-marker {
   font-size: 11px;
+  color: var(--on-surface-variant);
+  font-weight: 500;
+  text-align: center;
+  padding: 10px 0 4px 0;
+  border-top: 1px dashed var(--surface-bright);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: color 0.2s ease;
+}
+
+.scroll-completion-marker.completed {
   color: var(--primary);
   font-weight: 600;
-  text-align: center;
-  padding: 8px 0 4px 0;
-  border-top: 1px dashed var(--surface-bright);
 }
 
 .progress-bar-bg {
