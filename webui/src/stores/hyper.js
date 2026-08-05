@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { execCommand, sanitize, isKSU } from '@/helpers/shell'
 
-const MOD = '/data/adb/modules/tanzanite_hypercore'
+const MOD = '/data/adb/modules/hypercore'
 const LOG = '/sdcard/Android/hypercore.log'
 const GL_MOD = `${MOD}/gamelist.txt`
 const GL_SD = '/sdcard/Android/gamelist.txt'
@@ -144,8 +144,10 @@ export const useHyperStore = defineStore('hyper', () => {
     isRefreshing = true
 
     const cmdList = [
-      `echo "IPC:$(echo GET_STATUS | nc -U ${MOD}/hypercore.sock 2>/dev/null || true)"`,
-      `PID=$(pidof libhypercore.so || pidof hypercore || pgrep -f libhypercore.so || pgrep -f hypercore 2>/dev/null); echo "PID:\${PID:-}"`,
+      `MOD="/data/adb/modules/hypercore"`,
+      `if [ ! -d "$MOD" ]; then MOD="/data/adb/modules/tanzanite_hypercore"; fi`,
+      `echo "IPC:$(echo GET_STATUS | nc -U $MOD/hypercore.sock 2>/dev/null || true)"`,
+      `PID=$(pidof libhypercore.so || pidof hypercore || pgrep -f libhypercore.so || pgrep -f hypercore 2>/dev/null); echo "PID:\${PID}"`,
       `echo "CL0:$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2>/dev/null):$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 2>/dev/null):$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2>/dev/null)"`,
       `echo "CL1:$(cat /sys/devices/system/cpu/cpu6/cpufreq/scaling_cur_freq 2>/dev/null):$(cat /sys/devices/system/cpu/cpu6/cpufreq/scaling_min_freq 2>/dev/null):$(cat /sys/devices/system/cpu/cpu6/cpufreq/scaling_max_freq 2>/dev/null)"`,
       `echo "GOV:$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null)"`,
@@ -167,10 +169,10 @@ export const useHyperStore = defineStore('hyper', () => {
       `echo "SW:$(cat /proc/sys/vm/swappiness 2>/dev/null):$(cat /proc/sys/vm/vfs_cache_pressure 2>/dev/null)"`,
       `echo "UP:$(cat /proc/uptime 2>/dev/null | cut -d' ' -f1)"`,
       `echo "KV:$(uname -r 2>/dev/null)"`,
-      `DESC=$(grep '^description=' ${MOD}/module.prop 2>/dev/null); echo "DESC:$DESC"`,
-      `VER=$(grep '^version=' ${MOD}/module.prop 2>/dev/null | cut -d'=' -f2); echo "VER:$VER"`,
+      `DESC=$(grep '^description=' $MOD/module.prop 2>/dev/null); echo "DESC:$DESC"`,
+      `VER=$(grep '^version=' $MOD/module.prop 2>/dev/null | cut -d'=' -f2); echo "VER:$VER"`,
       `echo "===GL==="`,
-      `cat ${GL_MOD} 2>/dev/null || cat ${GL_SD} 2>/dev/null || true`
+      `cat $MOD/gamelist.txt 2>/dev/null || cat /sdcard/Android/gamelist.txt 2>/dev/null || true`
     ]
 
     if (isLogsActive.value) {
